@@ -19,7 +19,7 @@ use core::usize;
 use crate::config::{MAX_APP_NUM, MAX_SYSCALL_NUM};
 use crate::loader::{get_num_app, init_app_cx};
 use crate::sync::UPSafeCell;
-use crate::timer::get_time;
+use crate::timer::get_time_ms;
 use lazy_static::*;
 use switch::__switch;
 pub use task::{TaskControlBlock, TaskStatus};
@@ -86,7 +86,7 @@ impl TaskManager {
         let mut inner = self.inner.exclusive_access();
         let task0 = &mut inner.tasks[0];
         task0.task_status = TaskStatus::Running;
-        task0.task_first_call = get_time();
+        task0.task_first_call = get_time_ms();
         task0.task_is_first = false;
         let next_task_cx_ptr = &task0.task_cx as *const TaskContext;
         drop(inner);
@@ -131,7 +131,7 @@ impl TaskManager {
             let current = inner.current_task;
             inner.tasks[next].task_status = TaskStatus::Running;
             if inner.tasks[next].task_is_first {
-                inner.tasks[next].task_first_call = get_time();
+                inner.tasks[next].task_first_call = get_time_ms();
                 inner.tasks[next].task_is_first = false;
             }
             inner.current_task = next;
@@ -152,7 +152,7 @@ impl TaskManager {
     fn get_current_time(&self) -> usize {
         let inner = self.inner.exclusive_access();
         let current = inner.current_task;
-        let current_time = get_time() - inner.tasks[current].task_first_call;
+        let current_time = get_time_ms() - inner.tasks[current].task_first_call;
         current_time
     }
 
@@ -217,7 +217,7 @@ pub fn generate_syscall_time(syscall_id: usize) {
 }
 
 /// Get task syscall time
-pub fn get_task_syscall_time()-> [u32; MAX_SYSCALL_NUM]{
+pub fn get_task_syscall_time()->[u32; MAX_SYSCALL_NUM] {
     let sys_times = TASK_MANAGER.get_task_syscall_time();
     return sys_times;
 }
