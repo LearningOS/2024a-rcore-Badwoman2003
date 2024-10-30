@@ -162,6 +162,14 @@ impl TaskManager {
         let current = inner.current_task;
         inner.tasks[current].task_syscall_time[syscall_id] += 1;
     }
+
+    /// Get task_syscall_time
+    fn get_task_syscall_time(&self) -> [u32; MAX_SYSCALL_NUM] {
+        let  inner = self.inner.exclusive_access();
+        let current = inner.current_task;
+        let syscall_times = inner.tasks[current].task_syscall_time;
+        return syscall_times;
+    }
 }
 
 /// Run the first task in task list.
@@ -206,4 +214,10 @@ pub fn get_current_time() -> usize {
 /// Generate syscall time
 pub fn generate_syscall_time(syscall_id: usize) {
     TASK_MANAGER.generate_syscall_time(syscall_id);
+}
+
+/// Get task syscall time
+pub fn get_task_syscall_time()-> [u32; MAX_SYSCALL_NUM]{
+    let sys_times = TASK_MANAGER.get_task_syscall_time();
+    return sys_times;
 }
